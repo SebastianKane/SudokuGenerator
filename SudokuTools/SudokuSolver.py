@@ -1,5 +1,8 @@
+import copy
+
 class Cell:
     def __init__(self, value=0):
+        #The following in_column, in_box and in_row arrays hold references to all the cells in the corresponding group.
         self.in_column=[]
         self.in_row=[]
         self.in_box=[]
@@ -11,13 +14,8 @@ class Cell:
     def __int__(self):
         return int(self.value)
     
-    def update(self):
-        possible_values = self.possible_values()
-        if len(possible_values)==1:
-            self.value=list(possible_values)[0]
-            return self.value
-        else:
-            return 0
+    def set_value(self, value):
+        self.value=value
     
     def possible_values(self):
         column_values=set([int(cell) for cell in self.in_column])
@@ -37,16 +35,19 @@ class Cell:
 class Puzzle:
     def __init__(self, numbers:str):
         '''
-        numbers: A 81 digit integer that's used to denote a sudoku puzzle read left to right starting at the top going down to the bottom.
+        Creates a new puzzle object.
+        numbers: A 81 digit string that's used to denote a sudoku puzzle read left to right starting at the top going down to the bottom.
         '''
         self.cells = []
         self.solutions=set()
 
-
+        #Creates 3 lists composed of 9 empty lists for the 9 representives of each group.
         columns = [[] for _ in range(9)]
         rows = [[] for _ in range(9)]
         boxes=[[] for _ in range(9)]
-        for index, num in enumerate(str(numbers)):
+
+        #Initializes cells and adds them to the corresponding column, row and box lists.
+        for index, num in enumerate(str(numbers)): 
             cell=Cell(num)
             self.cells.append(cell)
             column_num=index//9
@@ -55,6 +56,7 @@ class Puzzle:
             rows[row_num].append(cell)
             boxes[column_num//3+(row_num//3)*3].append(cell)
         
+        #Associates the reference for each column, row and box to their corresponding cell.
         for x in range(9):
             for cell in columns[x]:
                 cell.set_column(columns[x])
@@ -64,28 +66,81 @@ class Puzzle:
 
             for cell in boxes[x]:
                 cell.set_box(boxes[x])
-
-    def __int__(self) -> int:
-        return int(''.join(str(int(x)) for x in self.cells))
     
     def __str__(self) -> str:
-        num=str(int(self))
-        if len(num) < 81:
-            num='0'+num
+        '''
+        Returns a string representation of the puzzle with a new line every 9 characters.
+        '''
+        line = ''.join(str(int(x)) for x in self.cells)
         out=""
         for x in range(0,9):
-            out+=f'{num[0+x*9:9+x*9]}\n'
+            out+=f'{line[0+x*9:9+x*9]}\n'
         return out
     
     def solve(self):
-        updated = True
-        while updated:
-            updated = False
-            for cell in self.cells:
-                if int(cell) == 0:
-                    if cell.update() != 0:
-                        updated = True
-        
-        #If there are still 0s after reducing the puzzle then solve the remaining recursively.
+        '''
+        Solves the puzzle and returns the solution.
+        '''
+        #Checks to see if the puzzle is solved
         if '0' in str(self):
-            print('solve more')
+
+            #Starts by finding the cell with the fewest possibilities.
+            fewest_tuple=self.find_fewest()
+            curr_cell=fewest_tuple[0]
+            possibilities=fewest_tuple[1] 
+            possibilities_length=len(possibilities)
+
+            if possibilities_length == 0: #Not solvable
+                return None
+
+            if possibilities_length == 1: #If there is only one possibility than 
+                old_value = curr_cell.value
+                curr_cell.set_value(list(possibilities)[0])
+                solve=self.solve()
+                if solve != None:
+                    return solve
+                else:
+                    curr_cell.set_value(old_value)
+                    return None
+            
+            if possibilities_length > 1:
+                for value in possibilities:
+                    old_value = curr_cell.value
+                    curr_cell.set_value(value)
+                    solve=self.solve()
+                    if solve != None:
+                        return solve
+                    else:
+                        curr_cell.set_value(old_value)
+        else:
+            return str(self)
+
+
+
+
+    def find_fewest(self):
+        '''
+        Finds the cell with the fewest possibilities.
+        Used as a helper method for solve().
+        Returns a tuple to reduce number of times possible_values() is called.
+        '''
+        cell=None
+        possibilities = None
+        for curr_cell in self.cells:
+            if int(curr_cell) == 0:
+                if cell is None:
+                    cell = curr_cell
+                    possibilities = curr_cell.possible_values()
+                else:
+                    curr_possibilities=curr_cell.possible_values()
+                    if len(curr_possibilities) < len(possibilities):
+                        cell = curr_cell
+                        possibilities = curr_possibilities
+
+                if len(possibilities)==0:
+                    return (cell, possibilities)
+    
+        return (cell, possibilities)
+                    
+
+
