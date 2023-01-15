@@ -34,6 +34,6 @@ with zipfile.ZipFile("sudoku_archive.zip") as zipf:
                 solved=puzz.check(row[1])
                 if not solved:
                     errors+=1
-                total_solve_time+=start_time-time.time()
+                total_solve_time+=time.time()-start_time
 
 print(f'Errors: {errors}, total time: {total_solve_time/60} minutes, average time {total_solve_time/max} seconds.')
