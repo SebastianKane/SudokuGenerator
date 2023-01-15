@@ -1,10 +1,39 @@
 
 from SudokuTools import SudokuSolver as st
+import zipfile
+import io
+import csv
+import os
+import time
+from tqdm import tqdm
 
-#puzz = st.Puzzle('070000043040009610800634900094052000358460020000800530080070091902100005007040802')
-puzz = st.Puzzle('4...3.......6..8..........1....5..9..8....6...7.2........1.27..5.3....4.9........'.replace('.','0'))
-#puzz = st.Puzzle('..............3.85..1.2.......5.7.....4...1...9.......5......73..2.1........4...9'.replace('.','0'))
-print(puzz)
-print(puzz.solve())
-print(puzz)
-#print(int(puzz)==int('679518243543729618821634957794352186358461729216897534485276391962183475137945862'))
+max=100000
+total_solve_time=0
+errors=0
+
+
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
+print(os.getcwd())
+
+with zipfile.ZipFile("sudoku_archive.zip") as zipf:
+    with zipf.open("sudoku.csv", "r") as f:
+        reader = csv.reader(
+            io.TextIOWrapper(f, newline='')
+        )
+        for index, row in enumerate(tqdm(reader, total=max)):
+            if index == max:
+                break
+            elif index == 0:
+                pass
+            else:
+                start_time = time.time()
+                puzz=st.Puzzle(row[0])
+                puzz.solve()
+                solved=puzz.check(row[1])
+                if not solved:
+                    errors+=1
+                total_solve_time+=start_time-time.time()
+
+print(f'Errors: {errors}, total time: {total_solve_time/60} minutes, average time {total_solve_time/max} seconds.')

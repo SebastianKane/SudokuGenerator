@@ -141,6 +141,8 @@ class Puzzle:
                     return (cell, possibilities)
     
         return (cell, possibilities)
-                    
+        
+    def check(self, solution:str):
+        return ''.join(str(int(x)) for x in self.cells)==solution
 
 
