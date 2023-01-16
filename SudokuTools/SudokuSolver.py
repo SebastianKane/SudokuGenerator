@@ -33,7 +33,7 @@ class Cell:
         self.in_box=box
 
 class Puzzle:
-    def __init__(self, numbers:str):
+    def __init__(self):
         '''
         Creates a new puzzle object.
         numbers: A 81 digit string that's used to denote a sudoku puzzle read left to right starting at the top going down to the bottom.
@@ -47,8 +47,8 @@ class Puzzle:
         boxes=[[] for _ in range(9)]
 
         #Initializes cells and adds them to the corresponding column, row and box lists.
-        for index, num in enumerate(str(numbers)): 
-            cell=Cell(num)
+        for index in range(81): 
+            cell=Cell(0)
             self.cells.append(cell)
             column_num=index//9
             row_num=index%9
@@ -76,6 +76,10 @@ class Puzzle:
         for x in range(0,9):
             out+=f'{line[0+x*9:9+x*9]}\n'
         return out
+    
+    def load_puzzle(self, numbers:str):
+            for index, num in enumerate(numbers):
+                self.cells[index].set_value(int(num))
     
     def solve(self):
         '''

@@ -16,7 +16,7 @@ abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
 print(os.getcwd())
-
+puzz=st.Puzzle()
 with zipfile.ZipFile("sudoku_archive.zip") as zipf:
     with zipf.open("sudoku.csv", "r") as f:
         reader = csv.reader(
@@ -29,7 +29,7 @@ with zipfile.ZipFile("sudoku_archive.zip") as zipf:
                 pass
             else:
                 start_time = time.time()
-                puzz=st.Puzzle(row[0])
+                puzz.load_puzzle(row[0])
                 puzz.solve()
                 solved=puzz.check(row[1])
                 if not solved:
